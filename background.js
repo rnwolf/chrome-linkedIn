@@ -9,22 +9,6 @@ chrome.runtime.onInstalled.addListener(function() {
     }
   });
 
-  // Create dedicated folders for downloads
-  chrome.downloads.download({
-    url: 'data:text/plain;charset=utf-8,',
-    filename: 'linkedin_helper/.keep',
-    saveAs: false
-  });
-
-  chrome.downloads.download({
-    url: 'data:text/plain;charset=utf-8,',
-    filename: 'linkedin_helper/images/.keep',
-    saveAs: false
-  });
-
-  chrome.downloads.download({
-    url: 'data:text/plain;charset=utf-8,',
-    filename: 'linkedin_helper/json/.keep',
-    saveAs: false
-  });
+  // We won't try to create folders at install time
+  // Instead, we'll create folders as needed when files are downloaded
 });

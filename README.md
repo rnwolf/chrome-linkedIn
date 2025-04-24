@@ -1,3 +1,22 @@
+
+After updates reload the extension in Chrome after making these changes.
+
+Here's how to do it:
+
+Open Chrome and go to chrome://extensions/ (type this in your address bar)
+Find your LinkedIn Helper extension in the list
+Click the refresh/reload icon (circular arrow) on the extension card
+Or alternatively, toggle the extension off and then on again using the switch
+
+If you've made substantial changes to the extension (especially to the manifest file or background scripts), it's sometimes better to:
+
+Remove the extension completely (click the "Remove" button)
+Then load it again by clicking "Load unpacked" and selecting your extension folder
+
+This ensures that all changes, particularly those to the background scripts or manifest, are properly initialized. Changes to popup.html or content scripts usually only require a simple reload.
+After reloading, the extension will create the new folder structure (linkedin_helper with subfolders) the next time it runs, and all future downloads will use this organized file structure.
+
+
 LinkedIn Chrome Extension
 I've created a Chrome extension that allows you to save information from LinkedIn profiles and posts, as well as create and publish posts directly to LinkedIn. Here's how it works:
 Features
