@@ -1,32 +1,34 @@
 // manifest.json
 {
-    "manifest_version": 3,
-    "name": "LinkedIn Helper",
-    "version": "1.0",
-    "description": "Save and post information from and to LinkedIn",
-    "permissions": [
-      "storage",
-      "activeTab",
-      "scripting"
-    ],
-    "host_permissions": [
-      "https://*.linkedin.com/*"
-    ],
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "16": "images/icon16.png",
-        "48": "images/icon48.png",
-        "128": "images/icon128.png"
-      }
-    },
-    "background": {
-      "service_worker": "background.js"
-    },
-    "content_scripts": [
-      {
-        "matches": ["https://*.linkedin.com/*"],
-        "js": ["content.js"]
-      }
-    ]
-  }
+  "manifest_version": 3,
+  "name": "LinkedIn Helper",
+  "version": "1.0",
+  "description": "Save and post information from and to LinkedIn, and download saved posts",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "downloads",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.linkedin.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.linkedin.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}

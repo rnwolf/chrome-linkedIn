@@ -1,3 +1,4 @@
+
 // popup.html
 <!DOCTYPE html>
 <html>
@@ -46,22 +47,64 @@
       margin-top: 15px;
       margin-bottom: 5px;
     }
+    .section {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+    .download-options {
+      margin-top: 5px;
+    }
+    .numeric-input {
+      width: 100%;
+      padding: 5px;
+      margin: 5px 0;
+    }
+    .checkbox-option {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+    .checkbox-option input {
+      margin-right: 8px;
+    }
+    #downloadStatus {
+      margin-top: 8px;
+      padding: 5px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      min-height: 20px;
+    }
   </style>
 </head>
 <body>
   <h2>LinkedIn Helper</h2>
 
-  <div id="capture-controls">
+  <div id="capture-controls" class="section">
     <button id="saveProfile">Save Current Profile</button>
     <button id="savePost">Save Current Post</button>
     <textarea id="customText" placeholder="Write custom information to save..."></textarea>
     <button id="saveCustom">Save Custom Text</button>
   </div>
 
-  <h3>Saved Information</h3>
-  <div id="saved-items"></div>
+  <div id="saved-posts-controls" class="section">
+    <h3>LinkedIn Saved Posts</h3>
+    <button id="goToSavedPosts">Go to Saved Posts Page</button>
+    <div class="download-options">
+      <input type="number" id="postsCount" class="numeric-input" min="1" max="50" value="5" placeholder="Number of posts to download">
+      <div class="checkbox-option">
+        <input type="checkbox" id="downloadImages" checked>
+        <label for="downloadImages">Download post images</label>
+      </div>
+      <button id="downloadSavedPosts">Download Recent Saved Posts</button>
+      <div id="downloadStatus"></div>
+    </div>
+  </div>
 
-  <div id="post-controls">
+  <h3>Saved Information</h3>
+  <div id="saved-items" class="section"></div>
+
+  <div id="post-controls" class="section">
     <h3>Create Post</h3>
     <textarea id="postContent" placeholder="Write your LinkedIn post here..."></textarea>
     <button id="createPost">Post to LinkedIn</button>
