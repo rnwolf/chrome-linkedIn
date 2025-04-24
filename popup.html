@@ -1,0 +1,72 @@
+// popup.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LinkedIn Helper</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
+    button {
+      margin: 5px 0;
+      padding: 8px;
+      width: 100%;
+      background-color: #0a66c2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004182;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin: 5px 0;
+      resize: vertical;
+    }
+    .saved-item {
+      border: 1px solid #ddd;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 4px;
+    }
+    .saved-item-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+    }
+    .saved-item-actions button {
+      width: 48%;
+    }
+    h3 {
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>LinkedIn Helper</h2>
+
+  <div id="capture-controls">
+    <button id="saveProfile">Save Current Profile</button>
+    <button id="savePost">Save Current Post</button>
+    <textarea id="customText" placeholder="Write custom information to save..."></textarea>
+    <button id="saveCustom">Save Custom Text</button>
+  </div>
+
+  <h3>Saved Information</h3>
+  <div id="saved-items"></div>
+
+  <div id="post-controls">
+    <h3>Create Post</h3>
+    <textarea id="postContent" placeholder="Write your LinkedIn post here..."></textarea>
+    <button id="createPost">Post to LinkedIn</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
