@@ -1,15 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>LinkedIn Downloader</title>
+  <title>LinkedIn Helper</title>
   <style>
-    body { width: 200px; font-family: sans-serif; padding: 10px; }
-    button { width: 100%; padding: 10px; cursor: pointer; }
+    body { width: 220px; font-family: sans-serif; padding: 10px; font-size: 14px; }
+    button { width: 100%; padding: 10px; margin-top: 8px; cursor: pointer; border: 1px solid #ccc; background-color: #f8f8f8; border-radius: 3px; }
+    button:disabled { cursor: not-allowed; background-color: #e0e0e0; color: #999; }
+    h3 { margin-top: 0; margin-bottom: 5px; text-align: center; }
+    p { font-size: 12px; color: #555; margin-bottom: 10px; }
   </style>
 </head>
 <body>
-  <h3>Download Post</h3>
-  <button id="downloadBtn">Download Content</button>
+  <h3>LinkedIn Helper</h3>
+
+  <p>Use this button for posts:</p>
+  <button id="downloadPostBtn">Download Post Content</button>
+
+  <hr style="margin: 15px 0;">
+
+  <p>Use this button for profiles (linkedin.com/in/...):</p>
+  <button id="downloadContactBtn" disabled>Download Contact Info</button>
+
   <script src="popup.js"></script>
 </body>
 </html>
