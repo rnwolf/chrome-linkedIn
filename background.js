@@ -1,8 +1,7 @@
 // c:\Users\rnwol\workspace\chrome-linkedIn\background.js
 
-// Helper function to convert Blob to data URL (remains the same)
+// Helper function to convert Blob to data URL
 function blobToDataURL(blob) {
-  // ... (implementation as before) ...
   return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -23,7 +22,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
               const now = new Date();
               const timestamp = now.toISOString().replace(/[:.]/g, '-');
               const baseFilename = `linkedin-post-${timestamp}`;
-              const downloadSubfolder = `linkedin/posts/${baseFilename}`; // Added 'posts' subfolder
+              // Organize posts into a subfolder
+              const downloadSubfolder = `linkedin/posts/${baseFilename}`;
 
               // Prepare Post JSON Data
               const postData = {
@@ -54,9 +54,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
               // Download Post Images
               imageUrls.forEach((imageUrl, index) => {
-                  // ... (image download logic remains the same, using downloadSubfolder) ...
                   let extension = ".jpg";
-                  try { /* ... get extension ... */ } catch (e) { /* ... handle error ... */ }
+                  try {
+                      const urlPath = new URL(imageUrl).pathname;
+                      const lastDot = urlPath.lastIndexOf('.');
+                      if (lastDot !== -1 && lastDot > urlPath.lastIndexOf('/')) {
+                          extension = urlPath.substring(lastDot);
+                      }
+                  } catch (e) { console.warn("Could not parse image URL for extension:", imageUrl, e); }
                   const imageFilename = `${downloadSubfolder}/${baseFilename}-image-${index + 1}${extension}`;
                   chrome.downloads.download({ url: imageUrl, filename: imageFilename, saveAs: false })
                       .catch(error => console.error(`Image download failed for ${imageUrl}:`, error));
@@ -66,28 +71,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
               console.error("Error processing post blobs or downloading:", error);
           }
       })();
-      return true; // Indicate async work
+      // ** REMOVED 'return true;' ** - No response needed back to content script
   }
 
   // --- Handler for Contact Content ---
   else if (request.action === "processContactContent") {
       console.log("Background script received CONTACT data:", request.data);
-      const contactData = request.data; // Contains profileUrl, name, location, etc.
+      const contactDataWithTimestamp = {
+          downloadTimestamp: new Date().toISOString(),
+          ...request.data
+      };
 
       (async () => {
           try {
               const now = new Date();
               const timestamp = now.toISOString().replace(/[:.]/g, '-');
-              // Use a different base filename pattern for contacts
               const baseFilename = `linkedin-contact-${timestamp}`;
-              // Use a different subfolder for contacts
-              const downloadSubfolder = `linkedin/contacts/${baseFilename}`; // Added 'contacts' subfolder
+               // Organize contacts into a subfolder
+              const downloadSubfolder = `linkedin/contacts/${baseFilename}`;
 
-              // Prepare Contact JSON data (already an object)
-              const jsonDataString = JSON.stringify({
-                  downloadTimestamp: now.toISOString(), // Add download timestamp
-                  ...contactData // Spread the received contact data
-              }, null, 2);
+              // Prepare Contact JSON data
+              const jsonDataString = JSON.stringify(contactDataWithTimestamp, null, 2);
               const jsonBlob = new Blob([jsonDataString], { type: 'application/json;charset=utf-8' });
               const jsonUrl = await blobToDataURL(jsonBlob);
 
@@ -106,11 +110,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
               console.error("Error processing contact blob or downloading:", error);
           }
       })();
-      return true; // Indicate async work
+       // ** REMOVED 'return true;' ** - No response needed back to content script
   }
 
-  // Return false if the action wasn't handled here (or true if ping needs async response elsewhere)
-  return false; // Default for unhandled actions
+  // Return false or nothing if the action wasn't handled here.
+  // The ping action in content.js correctly returns true and sends a response.
+  return false;
 });
 
 console.log("LinkedIn Post/Contact Downloader background script loaded.");

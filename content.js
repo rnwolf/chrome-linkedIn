@@ -1,164 +1,164 @@
 // c:\Users\rnwol\workspace\chrome-linkedIn\content.js
 
 // --- Post Selectors ---
-const POST_SELECTOR = ".feed-shared-update-v2";
-const POST_TEXT_SELECTOR = ".update-components-text";
-const POST_IMAGE_SELECTOR = ".update-components-image__image";
-const POST_IMAGE_SRC_ATTRIBUTE = "src";
-const POST_AUTHOR_SELECTOR = ".update-components-actor__title span[aria-hidden='true']";
-const POST_TIME_SELECTOR = ".update-components-actor__sub-description";
+// ... (keep post selectors) ...
 
 // --- Profile Selectors (EXAMPLES - MUST BE VERIFIED/UPDATED) ---
-// Use Developer Tools (Inspect Element) on a profile page!
-const PROFILE_NAME_SELECTOR = "h1"; // Often the main H1
+const PROFILE_NAME_SELECTOR = "h1";
 const PROFILE_LOCATION_SELECTOR = ".text-body-small.inline.t-black--light.break-words"; // Usually a span near headline
-const PROFILE_FOLLOWERS_SELECTOR = "text-body-small t-black--light inline-block"; // This is tricky, might be part of "X followers" or "Y connections" text. Inspect carefully. Might need more complex logic if combined.
-const PROFILE_CONNECTIONS_SELECTOR = "span.link-without-visited-state"; // Often used for 500+ connections link
-const PROFILE_CONTACT_INFO_LINK_SELECTOR = "#top-card-text-details-contact-info"; // Link to open contact info modal
-const PROFILE_WEBSITE_SELECTOR = ".ci-websites .pv-contact-info__contact-link"; // Inside contact info modal
-const PROFILE_ABOUT_SECTION_SELECTOR = "section[data-field='skill_details'] + div.display-flex.full-width + div"; // Example: Find the section *after* skills, might need adjustment based on profile layout. Look for the div containing the text.
-const PROFILE_ABOUT_TEXT_SELECTOR = ".inline-show-more-text span[aria-hidden='true']"; // Selector for the actual text within the about section, handling "see more"
-const PROFILE_SKILLS_SECTION_SELECTOR = "section[data-field='skill_details']"; // The main skills section
-const PROFILE_SKILL_SELECTOR = ".visually-hidden"; // Often skills are within spans like this inside the section
+
+// --- More Specific Profile Selectors ---
+// Find the container for the main profile content to narrow down searches
+const PROFILE_MAIN_CONTAINER_SELECTOR = "main"; // Or a more specific ID/class if available
+
+// About Section Selectors
+const ABOUT_SECTION_HEADING_SELECTOR = "h2#about"; // Find the H2 with id="about"
+// Find the div containing the text, often a sibling or nested sibling of the heading's parent div
+const ABOUT_SECTION_TEXT_SELECTOR = "section[aria-labelledby='about'] div.inline-show-more-text"; // Try finding section labelled by 'about', then the text container
+
+// Services Section Selectors (if present)
+const SERVICES_SECTION_HEADING_SELECTOR = "h2#services"; // Example ID, might differ
+const SERVICES_SECTION_TEXT_SELECTOR = "section[aria-labelledby='services'] ul"; // Example: list within the section
+
+// Skills Section Selectors
+const SKILLS_SECTION_HEADING_SELECTOR = "h2#skills"; // Example ID, might differ
+// Look for the list items specifically within the skills section
+const ACTUAL_SKILL_ITEM_SELECTOR = "section[aria-labelledby='skills'] ul > li div.mr1 span[aria-hidden='true']"; // Example: Drill down to the skill text span
+
+// Selector to capture raw text (as requested, though less reliable)
+const RAW_CONTENT_SELECTOR = ".visually-hidden";
+
 
 // --- Function to extract Post data ---
-function extractPostContent() {
-    console.log("Content script: Trying to extract post content...");
-    let targetPost = null;
-    const posts = document.querySelectorAll(POST_SELECTOR);
-    // ... (rest of the post finding logic remains the same) ...
-    if (!posts.length) return { status: "error", message: "Could not find any LinkedIn posts." };
-    for (const post of posts) { /* ... find visible post ... */ }
-    if (!targetPost) targetPost = posts[0];
+// ... (extractPostContent remains the same) ...
 
-    const authorElement = targetPost.querySelector(POST_AUTHOR_SELECTOR);
-    const authorName = authorElement ? authorElement.innerText.trim() : "Author not found";
-    const timeElement = targetPost.querySelector(POST_TIME_SELECTOR);
-    const publishedTimeText = timeElement ? timeElement.innerText.trim() : "Time not found";
-    const postUrl = window.location.href;
-    const textElement = targetPost.querySelector(POST_TEXT_SELECTOR);
-    const postText = textElement ? textElement.innerText : "No text found.";
-    const imageElements = targetPost.querySelectorAll(POST_IMAGE_SELECTOR);
-    const imageUrls = [];
-    imageElements.forEach(img => { /* ... extract image URLs ... */ });
-
-    chrome.runtime.sendMessage({
-        action: "processExtractedContent", // Action for posts
-        data: { text: postText, imageUrls, author: authorName, publishedTimeText, postUrl }
-    });
-    return { status: "success" };
-}
 
 // --- Function to extract Contact data ---
 function extractContactInfo() {
     console.log("Content script: Trying to extract contact info...");
-
-    // Basic check
     if (!window.location.href.startsWith('https://www.linkedin.com/in/')) {
         return { status: "error", message: "Not on a valid LinkedIn profile page (/in/)." };
     }
 
     const profileUrl = window.location.href;
+    const mainContainer = document.querySelector(PROFILE_MAIN_CONTAINER_SELECTOR) || document; // Fallback to document
 
-    // Helper to safely get text content
-    const getText = (selector) => {
-        const element = document.querySelector(selector);
-        // Check for "See more" pattern in About section
-        if (selector === PROFILE_ABOUT_TEXT_SELECTOR && element?.parentNode?.classList.contains('inline-show-more-text--is-collapsed')) {
-             // If collapsed, try clicking the "see more" button first (more complex, omitted for simplicity here)
-             // For now, just get the visible part or indicate it's potentially truncated.
-             console.warn("About section might be truncated ('See more').");
-        }
-        return element ? element.innerText.trim() : null; // Return null if not found
+    // Helper to safely get text content from a specific element or within the main container
+    const getText = (selector, baseElement = mainContainer) => {
+        const element = baseElement.querySelector(selector);
+        return element ? element.innerText.trim() : null;
     };
 
      // Helper to safely get multiple elements' text
-    const getAllText = (selector) => {
-        const elements = document.querySelectorAll(selector);
-        return elements.length > 0 ? Array.from(elements).map(el => el.innerText.trim()) : [];
+    const getAllText = (selector, baseElement = mainContainer) => {
+        const elements = baseElement.querySelectorAll(selector);
+        return elements.length > 0 ? Array.from(elements).map(el => el.innerText.trim()).filter(Boolean) : []; // Filter out empty strings
     };
 
-    // Helper to safely get href attribute
-     const getAllHrefs = (selector) => {
-        const elements = document.querySelectorAll(selector);
-        return elements.length > 0 ? Array.from(elements).map(el => el.href) : [];
-    };
-
-    const name = getText(PROFILE_NAME_SELECTOR);
+    // --- Extract Basic Info ---
+    const name = getText(PROFILE_NAME_SELECTOR, document); // H1 is likely outside main container sometimes
     const location = getText(PROFILE_LOCATION_SELECTOR);
 
-    // Followers/Connections needs careful inspection - might be one or the other, or combined
-    //let followers = getText(PROFILE_FOLLOWERS_SELECTOR);
-    //if (!followers) {
-    //    followers = getText(PROFILE_CONNECTIONS_SELECTOR); // Fallback attempt
-    //}
+    // --- Extract Raw Content (as requested) ---
+    const rawContent = getAllText(RAW_CONTENT_SELECTOR, document); // Get all visually-hidden text across the page
 
-    // --- Extract Followers/Connections (More Robust Method) ---
-    let followersConnectionsText = "Followers/Connections not found"; // Default value
-    // Try to find a container for the top card stats (adjust selector as needed)
-    const topCardStatsContainer = document.querySelector('main section:first-of-type ul'); // Example: First UL in the first section of main
+    // --- Extract Followers/Connections (from Raw Content) ---
+    let followersConnectionsText = "Followers/Connections not found";
+    const followerRegex = /([\d,]+)\s+followers?/i; // Regex to find number + "followers"
+    for (const text of rawContent) {
+        const match = text.match(followerRegex);
+        if (match && match[1]) {
+            followersConnectionsText = `${match[1]} followers`;
+            break;
+        }
+        // Add similar check for connections if needed
+    }
+    console.log("Found Followers/Connections:", followersConnectionsText);
 
-    if (topCardStatsContainer) {
-        const listItems = topCardStatsContainer.querySelectorAll('li');
-        for (const item of listItems) {
-            const itemText = item.innerText || "";
-            if (itemText.includes('follower')) { // Check for "follower" (case-insensitive might be better)
-                const countElement = item.querySelector('span'); // Assume number is in a span
-                if (countElement) {
-                    followersConnectionsText = countElement.innerText.trim() + " followers"; // Grab number and add label
-                    break; // Stop searching once found
-                }
-            } else if (itemText.includes('connection')) { // Fallback check for connections
-                 const countElement = item.querySelector('span'); // Might be a span or link text
-                 const linkElement = item.querySelector('a');
-                 if (countElement) {
-                     followersConnectionsText = countElement.innerText.trim() + " connections";
-                     break;
-                 } else if (linkElement) {
-                     // Handle cases like "500+ connections" where it's link text
-                     followersConnectionsText = linkElement.innerText.trim();
-                     break;
-                 }
-            }
+
+    // --- Extract About Section Text (More Targeted) ---
+    let aboutText = "About section not found or empty.";
+    const aboutTextElement = mainContainer.querySelector(ABOUT_SECTION_TEXT_SELECTOR);
+    if (aboutTextElement) {
+        // Check for collapsed state and click "see more" if necessary (Advanced)
+        const seeMoreButton = aboutTextElement.querySelector('button.inline-show-more-text__button');
+        if (seeMoreButton && aboutTextElement.classList.contains('inline-show-more-text--is-collapsed')) {
+            console.log("Clicking 'see more' for About section...");
+            seeMoreButton.click();
+            // NOTE: Need to wait briefly after click for content to expand before extracting
+            // This requires making this function async and adding a delay, or using MutationObserver
+            // For simplicity now, we'll just grab what's visible or potentially expanded text
+            // await new Promise(resolve => setTimeout(resolve, 200)); // Example if async
+            aboutText = aboutTextElement.querySelector('span[aria-hidden="true"]')?.innerText.trim() || aboutTextElement.innerText.trim();
+        } else {
+             aboutText = aboutTextElement.querySelector('span[aria-hidden="true"]')?.innerText.trim() || aboutTextElement.innerText.trim();
         }
     } else {
-        console.warn("Could not find the top card stats container reliably.");
-        // Optional: Fallback to less reliable class-based selector if needed
-        // followersConnectionsText = getText(PROFILE_FOLLOWERS_SELECTOR) || getText(PROFILE_CONNECTIONS_SELECTOR) || "Followers/Connections not found";
+        console.warn("Could not find About section text using selector:", ABOUT_SECTION_TEXT_SELECTOR);
+        // Fallback: Try finding "About" in rawContent and taking the next significant string (less reliable)
+        const aboutIndex = rawContent.findIndex(text => text.toLowerCase() === 'about');
+        if (aboutIndex !== -1 && rawContent[aboutIndex + 1]?.length > 50) { // Check next item looks like content
+            aboutText = rawContent[aboutIndex + 1];
+            console.log("Used fallback method for About text.");
+        }
     }
+    console.log("Found About Text:", aboutText.substring(0, 100) + "...");
 
 
-    // Websites often require clicking "Contact info" - this basic version won't do that.
-    // To get websites reliably, you'd need to:
-    // 1. Find PROFILE_CONTACT_INFO_LINK_SELECTOR and click it.
-    // 2. Wait for the contact info modal to appear.
-    // 3. Use PROFILE_WEBSITE_SELECTOR within the modal.
-    // 4. Close the modal.
-    // For now, we'll leave it potentially empty or try a simpler approach if websites are sometimes visible directly.
-    let websites = []; // Placeholder - requires modal interaction for reliability
-    console.warn("Website extraction requires clicking 'Contact info' - skipping for now.");
+    // --- Extract Services Text (More Targeted) ---
+    let servicesText = "Services section not found or empty.";
+    const servicesListElement = mainContainer.querySelector(SERVICES_SECTION_TEXT_SELECTOR);
+    if (servicesListElement) {
+        servicesText = servicesListElement.innerText.trim().replace(/\n+/g, ' • '); // Clean up list items
+    } else {
+         console.warn("Could not find Services section text using selector:", SERVICES_SECTION_TEXT_SELECTOR);
+         // Fallback from rawContent
+         const servicesIndex = rawContent.findIndex(text => text.toLowerCase() === 'services');
+         if (servicesIndex !== -1 && rawContent[servicesIndex + 1]) {
+             servicesText = rawContent[servicesIndex + 1];
+             console.log("Used fallback method for Services text.");
+         }
+    }
+    console.log("Found Services Text:", servicesText);
 
-    const aboutText = getText(PROFILE_ABOUT_TEXT_SELECTOR) || "About section not found or empty."; // Provide default
 
-    // Skills
-    const skills = getAllText(PROFILE_SKILL_SELECTOR);
+    // --- Extract Actual Skills (More Targeted) ---
+    let actualSkills = getAllText(ACTUAL_SKILL_ITEM_SELECTOR);
+    if (actualSkills.length === 0) {
+        console.warn("Could not find skills using selector:", ACTUAL_SKILL_ITEM_SELECTOR);
+        // Fallback: Try finding "Skills" in rawContent and taking subsequent items (less reliable)
+        const skillsIndex = rawContent.findIndex(text => text.toLowerCase() === 'skills');
+        if (skillsIndex !== -1) {
+            // Take a few items after "Skills" that don't look like endorsements
+            actualSkills = rawContent.slice(skillsIndex + 1, skillsIndex + 11) // Take up to 10 items
+                                     .filter(text => text && !text.toLowerCase().includes('endorse'));
+            console.log("Used fallback method for Skills.");
+        }
+    }
+     if (actualSkills.length === 0) {
+        actualSkills = ["Skills not found or empty"]; // Default if still empty
+     }
+    console.log("Found Actual Skills:", actualSkills);
 
-    // Construct data object, handling nulls
+
+    // --- Construct data object ---
     const contactData = {
         profileUrl: profileUrl,
         name: name || "Name not found",
         location: location || "Location not found",
-        followersConnections: followersConnectionsText || "Followers/Connections not found", // Combined field for simplicity
-        websites: websites, // Will be empty array for now
-        about: aboutText,
-        topSkills: skills.length > 0 ? skills : ["Skills not found or empty"] // Provide default
+        followersConnections: followersConnectionsText, // Specifically extracted
+        websites: [], // Still requires modal interaction
+        about: aboutText, // Specifically extracted
+        services: servicesText, // Specifically extracted
+        skills: actualSkills, // Specifically extracted skills
+        content: rawContent // The full dump from .visually-hidden
     };
 
-    console.log("Content script: Extracted contact data:", contactData);
+    console.log("Content script: Sending contact data:", contactData);
 
-    // Send data to background script with a different action
+    // Send data to background script
     chrome.runtime.sendMessage({
-        action: "processContactContent", // Distinct action for contacts
+        action: "processContactContent",
         data: contactData
     });
 
@@ -167,6 +167,7 @@ function extractContactInfo() {
 
 
 // --- Message Listener ---
+// ... (Message listener remains the same, calling extractContactInfo for the right action) ...
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("Content script received action:", request.action);
     let result;
@@ -175,25 +176,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ status: "ready" });
             break;
         case "downloadPostContent":
-            // Using setTimeout might still be useful if posts load dynamically
             setTimeout(() => {
                 result = extractPostContent();
                 sendResponse(result);
             }, 100);
-            break; // Important: Add break
+            break;
         case "downloadContactInfo":
-            // Profile info might also benefit from a slight delay
              setTimeout(() => {
                 result = extractContactInfo();
                 sendResponse(result);
-            }, 100);
-            break; // Important: Add break
+            }, 100); // Delay might help with potential "see more" clicks
+            break;
         default:
             console.warn("Unknown action received:", request.action);
             sendResponse({ status: "error", message: "Unknown action" });
-            break; // Important: Add break
+            break;
     }
-    // Return true to indicate asynchronous response for download actions
     return (request.action === "downloadPostContent" || request.action === "downloadContactInfo" || request.action === "ping");
 });
 
