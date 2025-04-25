@@ -1,18 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "LinkedIn Helper",
+  "name": "LinkedIn Post Downloader",
   "version": "1.0",
-  "description": "Save and post information from and to LinkedIn, and download saved posts",
+  "description": "Downloads text and images from a LinkedIn post.",
   "permissions": [
-    "storage",
-    "activeTab",
-    "scripting",
-    "downloads",
-    "tabs"
+    "activeTab", // Access the currently active tab
+    "scripting", // Inject content scripts
+    "downloads"  // Initiate file downloads
   ],
-  "host_permissions": [
-    "https://*.linkedin.com/*"
-  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -21,13 +19,9 @@
       "128": "images/icon128.png"
     }
   },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://*.linkedin.com/*"],
-      "js": ["content.js"]
-    }
-  ]
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  }
 }
